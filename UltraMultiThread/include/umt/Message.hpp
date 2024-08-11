@@ -42,8 +42,7 @@ class MessageError_Timeout : public MessageError {
  */
 class MessageError_Empty : public MessageError {
  public:
-  MessageError_Empty()
-      : MessageError("empty message. maybe uninitailized or moved!") {}
+  MessageError_Empty() : MessageError("empty message. maybe uninitailized or moved!") {}
 };
 
 template <class T>
@@ -94,14 +93,12 @@ class Subscriber {
    * @param msg_name 消息名称
    * @param max_fifo_size 最大消息长度
    */
-  explicit Subscriber(const std::string& msg_name, size_t size = 1)
-      : fifo_size(size) {
+  explicit Subscriber(const std::string& msg_name, size_t size = 1) : fifo_size(size) {
     bind(msg_name);
   }
 
   /// 拷贝构造函数
-  Subscriber(const Subscriber& other)
-      : fifo_size(other.fifo_size), fifo(other.fifo), p_msg(other.p_msg) {
+  Subscriber(const Subscriber& other) : fifo_size(other.fifo_size), fifo(other.fifo), p_msg(other.p_msg) {
     std::unique_lock subs_lock(p_msg->subs_mtx);
     p_msg->subs.emplace_front(this);
   }
@@ -117,10 +114,14 @@ class Subscriber {
   }
 
   /// 析构函数
-  ~Subscriber() { reset(); }
+  ~Subscriber() {
+    reset();
+  }
 
   /// 判断当前订阅器是否绑定到某个消息
-  explicit operator bool() { return p_msg != nullptr; }
+  explicit operator bool() {
+    return p_msg != nullptr;
+  }
 
   /// 重置订阅器
   void reset() {
@@ -156,13 +157,17 @@ class Subscriber {
    * @brief 设置队列长度，size==0则不限制最大长度
    * @param size 最大队列长度
    */
-  void set_fifo_size(size_t size) { fifo_size = size; }
+  void set_fifo_size(size_t size) {
+    fifo_size = size;
+  }
 
   /**
    * @brief 读取当前最大队列长度
    * @return 当前最大队列长度
    */
-  size_t get_fifo_size() { return fifo_size; }
+  size_t get_fifo_size() {
+    return fifo_size;
+  }
 
   /**
    * @brief 尝试获取一条消息
@@ -193,9 +198,7 @@ class Subscriber {
       throw MessageError_Empty();
     using namespace std::chrono;
     std::unique_lock lock(mtx);
-    if (!cv.wait_for(lock, milliseconds(ms), [this]() {
-          return p_msg->pubs.empty() || !fifo.empty();
-        })) {
+    if (!cv.wait_for(lock, milliseconds(ms), [this]() { return p_msg->pubs.empty() || !fifo.empty(); })) {
       throw MessageError_Timeout();
     }
     if (p_msg->pubs.empty())
@@ -217,9 +220,7 @@ class Subscriber {
     if (!p_msg)
       throw MessageError_Empty();
     std::unique_lock lock(mtx);
-    if (!cv.wait_until(lock, pt, [this]() {
-          return p_msg->pubs.empty() || !fifo.empty();
-        })) {
+    if (!cv.wait_until(lock, pt, [this]() { return p_msg->pubs.empty() || !fifo.empty(); })) {
       throw MessageError_Timeout();
     }
     if (p_msg->pubs.empty())
@@ -238,7 +239,9 @@ class Subscriber {
     fifo.push(obj);
   }
 
-  void notify() const { cv.notify_one(); }
+  void notify() const {
+    cv.notify_one();
+  }
 
  private:
   mutable std::mutex mtx;
@@ -262,7 +265,9 @@ class Publisher {
    * @brief 发布器的构造函数
    * @param msg_name 消息名称
    */
-  explicit Publisher(const std::string& msg_name) { bind(msg_name); }
+  explicit Publisher(const std::string& msg_name) {
+    bind(msg_name);
+  }
 
   /// 拷贝构造函数
   Publisher(const Publisher& other) : p_msg(other.p_msg) {
@@ -278,10 +283,14 @@ class Publisher {
   }
 
   /// 析构函数
-  ~Publisher() { reset(); }
+  ~Publisher() {
+    reset();
+  }
 
   /// 判断当前发布器是否绑定到某个消息
-  explicit operator bool() { return p_msg != nullptr; }
+  explicit operator bool() {
+    return p_msg != nullptr;
+  }
 
   /// 重置发布器
   void reset() {
@@ -329,57 +338,53 @@ class Publisher {
 
 }  // namespace umt
 
-#define UMT_EXPORT_MESSAGE_ALIAS_WITHOUT_TYPE_EXPORT(name, type, var) \
-  PYBIND11_EMBEDDED_MODULE(Message_##name, m) {                       \
-    using namespace umt;                                              \
-    using namespace umt::utils;                                       \
-    namespace py = pybind11;                                          \
-    m.def("names", &ObjManager<MessagePipe<type>>::names);            \
-    py::class_<Publisher<type>>(m, "Publisher")                       \
-        .def(py::init<>())                                            \
-        .def(py::init<std::string>(), py::arg("msg_name"))            \
-        .def("reset", &Publisher<type>::reset)                        \
-        .def("bind", &Publisher<type>::bind)                          \
-        .def("push", &Publisher<type>::push);                         \
-    py::class_<Subscriber<type>>(m, "Subscriber")                     \
-        .def(py::init<>())                                            \
-        .def(py::init<std::string, size_t>(), py::arg("msg_name"),    \
-             py::arg("fifo_size") = 0)                                \
-        .def("reset", &Subscriber<type>::reset)                       \
-        .def("bind", &Subscriber<type>::bind)                         \
-        .def("clear", &Subscriber<type>::clear)                       \
-        .def("pop", &Subscriber<type>::pop)                           \
-        .def("pop_for", &Subscriber<type>::pop_for);                  \
+#define UMT_EXPORT_MESSAGE_ALIAS_WITHOUT_TYPE_EXPORT(name, type, var)                        \
+  PYBIND11_EMBEDDED_MODULE(Message_##name, m) {                                              \
+    using namespace umt;                                                                     \
+    using namespace umt::utils;                                                              \
+    namespace py = pybind11;                                                                 \
+    m.def("names", &ObjManager<MessagePipe<type>>::names);                                   \
+    py::class_<Publisher<type>>(m, "Publisher")                                              \
+        .def(py::init<>())                                                                   \
+        .def(py::init<std::string>(), py::arg("msg_name"))                                   \
+        .def("reset", &Publisher<type>::reset)                                               \
+        .def("bind", &Publisher<type>::bind)                                                 \
+        .def("push", &Publisher<type>::push);                                                \
+    py::class_<Subscriber<type>>(m, "Subscriber")                                            \
+        .def(py::init<>())                                                                   \
+        .def(py::init<std::string, size_t>(), py::arg("msg_name"), py::arg("fifo_size") = 0) \
+        .def("reset", &Subscriber<type>::reset)                                              \
+        .def("bind", &Subscriber<type>::bind)                                                \
+        .def("clear", &Subscriber<type>::clear)                                              \
+        .def("pop", &Subscriber<type>::pop)                                                  \
+        .def("pop_for", &Subscriber<type>::pop_for);                                         \
   }
 
-#define UMT_EXPORT_MESSAGE_ALIAS(name, type, var)                  \
-  void __umt_init_message_##name(pybind11::class_<type>&& var);    \
-  PYBIND11_EMBEDDED_MODULE(Message_##name, m) {                    \
-    using namespace umt;                                           \
-    using namespace umt::utils;                                    \
-    namespace py = pybind11;                                       \
-    m.def("names", &ObjManager<MessagePipe<type>>::names);         \
-    py::class_<Publisher<type>>(m, "Publisher")                    \
-        .def(py::init<>())                                         \
-        .def(py::init<std::string>(), py::arg("msg_name"))         \
-        .def("reset", &Publisher<type>::reset)                     \
-        .def("bind", &Publisher<type>::bind)                       \
-        .def("push", &Publisher<type>::push);                      \
-    py::class_<Subscriber<type>>(m, "Subscriber")                  \
-        .def(py::init<>())                                         \
-        .def(py::init<std::string, size_t>(), py::arg("msg_name"), \
-             py::arg("fifo_size") = 0)                             \
-        .def("reset", &Subscriber<type>::reset)                    \
-        .def("bind", &Subscriber<type>::bind)                      \
-        .def("clear", &Subscriber<type>::clear)                    \
-        .def("pop", &Subscriber<type>::pop)                        \
-        .def("pop_for", &Subscriber<type>::pop_for);               \
-    try {                                                          \
-      __umt_init_message_##name(                                   \
-          py::class_<type, std::shared_ptr<type>>(m, #name));      \
-    } catch (...) {                                                \
-    }                                                              \
-  }                                                                \
+#define UMT_EXPORT_MESSAGE_ALIAS(name, type, var)                                            \
+  void __umt_init_message_##name(pybind11::class_<type>&& var);                              \
+  PYBIND11_EMBEDDED_MODULE(Message_##name, m) {                                              \
+    using namespace umt;                                                                     \
+    using namespace umt::utils;                                                              \
+    namespace py = pybind11;                                                                 \
+    m.def("names", &ObjManager<MessagePipe<type>>::names);                                   \
+    py::class_<Publisher<type>>(m, "Publisher")                                              \
+        .def(py::init<>())                                                                   \
+        .def(py::init<std::string>(), py::arg("msg_name"))                                   \
+        .def("reset", &Publisher<type>::reset)                                               \
+        .def("bind", &Publisher<type>::bind)                                                 \
+        .def("push", &Publisher<type>::push);                                                \
+    py::class_<Subscriber<type>>(m, "Subscriber")                                            \
+        .def(py::init<>())                                                                   \
+        .def(py::init<std::string, size_t>(), py::arg("msg_name"), py::arg("fifo_size") = 0) \
+        .def("reset", &Subscriber<type>::reset)                                              \
+        .def("bind", &Subscriber<type>::bind)                                                \
+        .def("clear", &Subscriber<type>::clear)                                              \
+        .def("pop", &Subscriber<type>::pop)                                                  \
+        .def("pop_for", &Subscriber<type>::pop_for);                                         \
+    try {                                                                                    \
+      __umt_init_message_##name(py::class_<type, std::shared_ptr<type>>(m, #name));          \
+    } catch (...) {}                                                                         \
+  }                                                                                          \
   void __umt_init_message_##name(pybind11::class_<type>&& var)
 
 #endif /* _UMT_MESSAGE_HPP_ */

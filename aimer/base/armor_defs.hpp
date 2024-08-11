@@ -16,25 +16,16 @@ namespace aimer {
 // 内联？
 enum class ArmorType { SMALL, BIG };
 
-enum class EnemyType {
-    OLD_SENTRY,
-    HERO,
-    ENGINEER,
-    INFANTRY,
-    BALANCE_INFANTRY,
-    OUTPOST,
-    CRYSTAL_BIG,
-    CRYSTAL_SMALL
-};
+enum class EnemyType { OLD_SENTRY, HERO, ENGINEER, INFANTRY, BALANCE_INFANTRY, OUTPOST, CRYSTAL_BIG, CRYSTAL_SMALL };
 
 struct SampleArmor {
-    constexpr SampleArmor(const aimer::ArmorType& type, const double& width, const double& height):
-        type(type),
+  constexpr SampleArmor(const aimer::ArmorType& type, const double& width, const double& height)
+      : type(type),
         width(width),
         height(height) {}
-    aimer::ArmorType type;
-    double width;
-    double height;
+  aimer::ArmorType type;
+  double width;
+  double height;
 };
 
 constexpr double INF = 1e18;
@@ -45,9 +36,9 @@ constexpr int MIN_ENEMY_NUMBER = 0;
 constexpr int MAX_ENEMY_NUMBER = 8;
 
 // 装甲板数据
-constexpr aimer::SampleArmor BIG_ARMOR { aimer::ArmorType::BIG, 0.230, 0.127 };
-constexpr aimer::SampleArmor SMALL_ARMOR { aimer::ArmorType::SMALL, 0.135, 0.125 };
+constexpr aimer::SampleArmor BIG_ARMOR{aimer::ArmorType::BIG, 0.230, 0.127};
+constexpr aimer::SampleArmor SMALL_ARMOR{aimer::ArmorType::SMALL, 0.135, 0.125};
 
-} // namespace aimer
+}  // namespace aimer
 
 #endif /* TOS_ARMOR_DEFS_HPP */

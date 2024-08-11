@@ -17,8 +17,7 @@ template <class T>
 class ExportPublicConstructor : public T {
  public:
   template <class... Ts>
-  explicit ExportPublicConstructor(Ts&&... args)
-      : T(std::forward<Ts>(args)...) {}
+  explicit ExportPublicConstructor(Ts&&... args) : T(std::forward<Ts>(args)...) {}
 };
 }  // namespace utils
 
@@ -48,9 +47,7 @@ class ObjManager : public T {
     std::unique_lock lock(_mtx);
     if (_map.find(name) != _map.end())
       return nullptr;
-    sptr p_obj =
-        std::make_shared<utils::ExportPublicConstructor<ObjManager<T>>>(
-            name, std::forward<Ts>(args)...);
+    sptr p_obj = std::make_shared<utils::ExportPublicConstructor<ObjManager<T>>>(name, std::forward<Ts>(args)...);
     _map.emplace(name, p_obj);
     return p_obj;
   }
@@ -82,9 +79,7 @@ class ObjManager : public T {
     auto iter = _map.find(name);
     if (iter != _map.end())
       return iter->second.lock();
-    sptr p_obj =
-        std::make_shared<utils::ExportPublicConstructor<ObjManager<T>>>(
-            name, std::forward<Ts>(args)...);
+    sptr p_obj = std::make_shared<utils::ExportPublicConstructor<ObjManager<T>>>(name, std::forward<Ts>(args)...);
     _map.emplace(name, p_obj);
     return p_obj;
   }
@@ -114,8 +109,8 @@ class ObjManager : public T {
    * @param args 对象的构造函数参数
    */
   template <class... Ts>
-  explicit ObjManager(std::string name, Ts&&... args)
-      : T(std::forward<Ts>(args)...), _name(std::move(name)) {}
+  explicit ObjManager(std::string name, Ts&&... args) : T(std::forward<Ts>(args)...),
+                                                        _name(std::move(name)) {}
 
  private:
   /// 当前对象名称
@@ -131,31 +126,26 @@ template <class T>
 __attribute__((visibility("default"))) inline std::mutex ObjManager<T>::_mtx;
 
 template <class T>
-__attribute__((visibility(
-    "default"))) inline std::unordered_map<std::string,
-                                           typename ObjManager<T>::wptr>
+__attribute__((visibility("default"))) inline std::unordered_map<std::string, typename ObjManager<T>::wptr>
     ObjManager<T>::_map;
 
 }  // namespace umt
 
-#define UMT_EXPORT_OBJMANAGER_ALIAS(name, type, var)               \
-  void __umt_init_objmanager_##name(pybind11::class_<type>&& var); \
-  PYBIND11_EMBEDDED_MODULE(ObjManager_##name, m) {                 \
-    using namespace umt;                                           \
-    namespace py = pybind11;                                       \
-    m.def("names", &ObjManager<type>::names);                      \
-    m.def("find", &ObjManager<type>::find);                        \
-    m.def("create", &ObjManager<type>::create<>);                  \
-    m.def("find_or_create", &ObjManager<type>::find_or_create<>);  \
-    try {                                                          \
-      __umt_init_objmanager_##name(                                \
-          py::class_<type, std::shared_ptr<type>>(m, #name));      \
-    } catch (...) {                                                \
-    }                                                              \
-  }                                                                \
+#define UMT_EXPORT_OBJMANAGER_ALIAS(name, type, var)                                   \
+  void __umt_init_objmanager_##name(pybind11::class_<type>&& var);                     \
+  PYBIND11_EMBEDDED_MODULE(ObjManager_##name, m) {                                     \
+    using namespace umt;                                                               \
+    namespace py = pybind11;                                                           \
+    m.def("names", &ObjManager<type>::names);                                          \
+    m.def("find", &ObjManager<type>::find);                                            \
+    m.def("create", &ObjManager<type>::create<>);                                      \
+    m.def("find_or_create", &ObjManager<type>::find_or_create<>);                      \
+    try {                                                                              \
+      __umt_init_objmanager_##name(py::class_<type, std::shared_ptr<type>>(m, #name)); \
+    } catch (...) {}                                                                   \
+  }                                                                                    \
   void __umt_init_objmanager_##name(pybind11::class_<type>&& var)
 
-#define UMT_EXPORT_OBJMANAGER(type, var) \
-  UMT_EXPORT_OBJMANAGER_ALIAS(type, type, var)
+#define UMT_EXPORT_OBJMANAGER(type, var) UMT_EXPORT_OBJMANAGER_ALIAS(type, type, var)
 
 #endif /* _UMT_OBJ_MANAGER_HPP_ */

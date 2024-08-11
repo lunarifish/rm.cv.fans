@@ -13,7 +13,8 @@ aimer::ArmorInfo detected_to_info(
     const aimer::DetectedArmor& detected,
     const aimer::SampleArmor& sample,
     const double& armor_pitch,
-    const aimer::CoordConverter* const converter);
+    const aimer::CoordConverter* const converter
+);
 // pass
 }  // namespace aimer
 

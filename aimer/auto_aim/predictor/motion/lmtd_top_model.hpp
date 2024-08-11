@@ -31,77 +31,70 @@ using Observation = Eigen::Matrix<double, N_Z, 1>;
 
 // 这只是用于绘制图像的一个试验品结构体
 struct PredictedArmor {
-    Eigen::Vector3d pos;
-    double orientation_yaw;
-    double orientation_pitch;
-    aimer::ArmorType type;
+  Eigen::Vector3d pos;
+  double orientation_yaw;
+  double orientation_pitch;
+  aimer::ArmorType type;
 };
 
 // 轮式轨迹滤波器
-struct ArmorFilter: public aimer::PositionPredictorInterface {
-private:
-    State state;
-    double t;
+struct ArmorFilter : public aimer::PositionPredictorInterface {
+ private:
+  State state;
+  double t;
 
-public:
-    ArmorFilter(const State& state, const double& t): state(state), t(t) {}
-    State predict(const double& t) const;
-    Eigen::Vector3d predict_pos(const double& t) const override;
-    Eigen::Vector3d predict_v(const double& t) const override;
+ public:
+  ArmorFilter(const State& state, const double& t) : state(state), t(t) {}
+  State predict(const double& t) const;
+  Eigen::Vector3d predict_pos(const double& t) const override;
+  Eigen::Vector3d predict_v(const double& t) const override;
 };
 
 struct AimAndState {
-    aimer::AimInfo aim;
-    State state;
+  aimer::AimInfo aim;
+  State state;
 };
 
 struct TopModel {
-private:
-    double predict_t;
-    double update_t;
-    Ekf ekf;
-    double another_radius;
-    double dz;
-    // 正在追踪的装甲板的序号
-    // 序号的计算依赖 aimer::LightThread
-    int tracked_armor_id;
-    // 计算目标相关
-    int top_level;
+ private:
+  double predict_t;
+  double update_t;
+  Ekf ekf;
+  double another_radius;
+  double dz;
+  // 正在追踪的装甲板的序号
+  // 序号的计算依赖 aimer::LightThread
+  int tracked_armor_id;
+  // 计算目标相关
+  int top_level;
 
-public:
-    // [functions]
-    void init(aimer::CoordConverter* const converter, aimer::EnemyState* const enemy_state);
-    void update(aimer::CoordConverter* const converter, aimer::EnemyState* const enemy_state);
-    bool credit(aimer::CoordConverter* const converter) const;
-    std::vector<PredictedArmor> predict_armors(
-        const double& t,
-        aimer::CoordConverter* const converter,
-        aimer::EnemyState* const state
-    ) const;
-    void draw_armors(
-        cv::Mat& img,
-        const double& t,
-        aimer::CoordConverter* const converter,
-        aimer::EnemyState* const state
-    ) const;
+ public:
+  // [functions]
+  void init(aimer::CoordConverter* const converter, aimer::EnemyState* const enemy_state);
+  void update(aimer::CoordConverter* const converter, aimer::EnemyState* const enemy_state);
+  bool credit(aimer::CoordConverter* const converter) const;
+  std::vector<PredictedArmor>
+  predict_armors(const double& t, aimer::CoordConverter* const converter, aimer::EnemyState* const state) const;
+  void draw_armors(
+      cv::Mat& img,
+      const double& t,
+      aimer::CoordConverter* const converter,
+      aimer::EnemyState* const state
+  ) const;
 
-    int get_top_level() const;
+  int get_top_level() const;
 
-    std::vector<ArmorFilter> get_armor_filters(aimer::EnemyState* const enemy_state) const;
+  std::vector<ArmorFilter> get_armor_filters(aimer::EnemyState* const enemy_state) const;
 
-    aimer::AimInfo
-    get_aim(aimer::CoordConverter* const converter, aimer::EnemyState* const enemy_state) const;
+  aimer::AimInfo get_aim(aimer::CoordConverter* const converter, aimer::EnemyState* const enemy_state) const;
 
-private:
-    // 这个函数用到了 this->tracked_armor_id
-    std::tuple<Eigen::Matrix<double, N_Z, 1>, std::array<double, N_Z>, int>
-    get_observation_and_r_and_id(
-        aimer::CoordConverter* const converter,
-        aimer::EnemyState* const enemy_state
-    ) const;
+ private:
+  // 这个函数用到了 this->tracked_armor_id
+  std::tuple<Eigen::Matrix<double, N_Z, 1>, std::array<double, N_Z>, int>
+  get_observation_and_r_and_id(aimer::CoordConverter* const converter, aimer::EnemyState* const enemy_state) const;
 
-    void update_top_level();
+  void update_top_level();
 };
-} // namespace aimer::lmtd
+}  // namespace aimer::lmtd
 
 #endif

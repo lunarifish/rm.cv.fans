@@ -24,15 +24,15 @@
 namespace aimer {
 
 class OutpostFixer {
-public:
-    std::vector<ArmorData> filter(const std::vector<ArmorData>& armors, const double& request_t);
+ public:
+  std::vector<ArmorData> filter(const std::vector<ArmorData>& armors, const double& request_t);
 
-private:
-    // what state?
-    double last_active_time = -10086.0;
-    double last_active_z = 1919180.0;
+ private:
+  // what state?
+  double last_active_time = -10086.0;
+  double last_active_z = 1919180.0;
 };
 
-} // namespace aimer
+}  // namespace aimer
 
 #endif
